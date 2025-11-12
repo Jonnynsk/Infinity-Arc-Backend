@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import cookieParser from "cookie-parser";
 
 import { AppModule } from "./app.module";
 
@@ -15,6 +16,8 @@ async function bootstrap() {
 
   const config = app.get(ConfigService);
   const logger = new Logger(AppModule.name);
+
+  app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 
   app.enableCors(getCorsConfig(config));
 
