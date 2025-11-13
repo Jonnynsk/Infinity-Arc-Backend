@@ -5,14 +5,13 @@ import cookieParser from "cookie-parser";
 
 import { AppModule } from "./app.module";
 
-import { getCorsConfig } from "./config";
+import { getCorsConfig, getSwaggerConfig } from "./config";
+import { SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe());
-
-  app.setGlobalPrefix("api");
 
   const config = app.get(ConfigService);
   const logger = new Logger(AppModule.name);
@@ -20,6 +19,13 @@ async function bootstrap() {
   app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 
   app.enableCors(getCorsConfig(config));
+  
+  const swaggerConfig = getSwaggerConfig();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+
+  SwaggerModule.setup("/docs", app, swaggerDocument, {
+    jsonDocumentUrl: "openapi.json",
+  });
 
   const port = config.getOrThrow<number>("HTTP_PORT");
   const host = config.getOrThrow<string>("HTTP_HOST");
