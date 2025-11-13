@@ -10,7 +10,7 @@ export class UsersController {
   public constructor(private readonly usersService: UsersService) {}
 
   @Protected()
-  @Get("@me")
+  @Get("me")
   public async getMe(@Authorized() user: User) {
     return user;
   }
