@@ -1,17 +1,24 @@
 import { Controller, Get } from "@nestjs/common";
-import type { User } from "@prisma/client";
+import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 
 import { UsersService } from "./users.service";
 
 import { Authorized, Protected } from "src/common/decorators";
 
+import { GetProfileResponse } from "./dto";
+
 @Controller("users")
 export class UsersController {
   public constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({
+    summary: "Get the profile of the current user",
+    description: "Get the profile of the current user",
+  })
+  @ApiOkResponse({ type: GetProfileResponse })
   @Protected()
-  @Get("me")
-  public async getMe(@Authorized() user: User) {
-    return user;
+  @Get("profile")
+  public async getProfile(@Authorized("id") id: string) {
+    return await this.usersService.getProfile(id);
   }
 }
