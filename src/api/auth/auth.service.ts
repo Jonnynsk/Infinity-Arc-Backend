@@ -12,9 +12,9 @@ import { Request, Response } from "express";
 
 import { PrismaService } from "src/infra/prisma/prisma.service";
 
-import { LoginRequest, RegisterRequest } from "./dto";
-import { JwtPayload } from "./interfaces";
+import { ChangePasswordRequest, LoginRequest, RegisterRequest } from "./dto";
 import { isDev, ms, StringValue } from "src/common/utils";
+import { JwtPayload } from "./interfaces";
 
 @Injectable()
 export class AuthService {
@@ -95,20 +95,21 @@ export class AuthService {
 
     const refreshToken = req.cookies["refreshToken"];
 
-    if(refreshToken) {
-        const payload: JwtPayload = await this.jwtService.verifyAsync(refreshToken);
+    if (refreshToken) {
+      const payload: JwtPayload =
+        await this.jwtService.verifyAsync(refreshToken);
 
-        if(payload) {
-            const user = await this.prismaService.user.findUnique({
-                where: {
-                    id: payload.id,
-                },
-            });
+      if (payload) {
+        const user = await this.prismaService.user.findUnique({
+          where: {
+            id: payload.id,
+          },
+        });
 
-            if(user) {
-                return this.auth(res, user);
-            }
+        if (user) {
+          return this.auth(res, user);
         }
+      }
     }
   }
 
@@ -124,6 +125,41 @@ export class AuthService {
 
     return {
       accessToken,
+    };
+  }
+
+  public async changePassword(userId: string, dto: ChangePasswordRequest) {
+    const { oldPassword, newPassword } = dto;
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const isPasswordValid = await verify(user.password, oldPassword);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+
+    const hashedPassword = await hash(newPassword);
+
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return {
+      message: "Password changed successfully",
     };
   }
 
