@@ -1,10 +1,22 @@
 import { Body, Controller, Post, Req, Res } from "@nestjs/common";
 import type { Request, Response } from "express";
-import { ApiConflictResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  ApiConflictResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
 
 import { AuthService } from "./auth.service";
 
-import { LoginRequest, RegisterRequest, AuthResponse } from "./dto";
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  ChangePasswordRequest,
+} from "./dto";
+import { Authorized, Protected } from "src/common/decorators";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -58,5 +70,20 @@ export class AuthController {
   @Post("logout")
   public async logout(@Res({ passthrough: true }) res: Response) {
     return await this.authService.logout(res);
+  }
+
+  @ApiOperation({
+    summary: "Change user password",
+    description: "Change the password of the authenticated user",
+  })
+  @ApiUnauthorizedResponse({ description: "Current password is incorrect" })
+  @ApiOkResponse({ description: "Password changed successfully" })
+  @Protected()
+  @Post("change-password")
+  public async changePassword(
+    @Authorized("id") userId: string,
+    @Body() dto: ChangePasswordRequest,
+  ) {
+    return await this.authService.changePassword(userId, dto);
   }
 }
