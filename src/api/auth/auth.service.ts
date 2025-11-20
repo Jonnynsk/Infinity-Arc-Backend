@@ -163,6 +163,16 @@ export class AuthService {
     };
   }
 
+  public async deleteAccount(res: Response, userId: string) {
+    await this.prismaService.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return this.setCookie(res, "", new Date(0));
+  }
+
   private async generateTokens(user: User) {
     const payload: JwtPayload = {
       id: user.id,

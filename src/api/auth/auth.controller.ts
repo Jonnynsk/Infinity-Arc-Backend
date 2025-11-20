@@ -86,4 +86,18 @@ export class AuthController {
   ) {
     return await this.authService.changePassword(userId, dto);
   }
+
+  @ApiOperation({
+    summary: "Delete user account",
+    description: "Delete the authenticated user's account",
+  })
+  @ApiOkResponse({ description: "Account deleted successfully" })
+  @Protected()
+  @Post("delete-account")
+  public async deleteAccount(
+    @Res({ passthrough: true }) res: Response,
+    @Authorized("id") userId: string,
+  ) {
+    return await this.authService.deleteAccount(res, userId);
+  }
 }
