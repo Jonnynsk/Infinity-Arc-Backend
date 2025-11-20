@@ -8,16 +8,30 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  
-  name      String
-  username  String   @unique
-  email     String   @unique
-  password  String
-  country   String
+  id       String @id @default(uuid())
+
+  name     String
+  username String @unique
+  email    String @unique
+  password String
+  country  String
+  aboutMe  String @default("") @map("about_me")
+
+  socialNetworks SocialNetwork[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model SocialNetwork {
+  id    String @id @default(uuid())
+  title String
+  link  String
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("social_networks")
 }

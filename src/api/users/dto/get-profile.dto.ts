@@ -1,5 +1,25 @@
 import { ApiProperty } from "@nestjs/swagger";
 
+class SocialNetwork {
+  @ApiProperty({
+    description: "The id of the social network",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+  })
+  id: string;
+
+  @ApiProperty({
+    description: "The title of the social network",
+    example: "Twitter",
+  })
+  title: string;
+
+  @ApiProperty({
+    description: "The link of the social network",
+    example: "https://twitter.com/john_doe",
+  })
+  link: string;
+}
+
 export class GetProfileResponse {
   @ApiProperty({
     example: "123e4567-e89b-12d3-a456-426614174000",
@@ -32,8 +52,27 @@ export class GetProfileResponse {
   country: string;
 
   @ApiProperty({
+    description: "The bio of the user",
+    example: "I am a software engineer and a full stack developer",
+  })
+  aboutMe: string;
+
+  @ApiProperty({
     description: "The date the user was registered",
     example: "2025-01-01",
   })
   createdAt: string;
+
+  @ApiProperty({
+    description: "The social networks of the user",
+    type: [SocialNetwork],
+    example: [
+      {
+        id: "123",
+        title: "Twitter",
+        link: "https://twitter.com/john_doe",
+      },
+    ],
+  })
+  socialNetworks: SocialNetwork[];
 }
