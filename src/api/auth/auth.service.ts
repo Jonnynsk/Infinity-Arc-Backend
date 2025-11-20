@@ -60,6 +60,14 @@ export class AuthService {
         email,
         password: hashedPassword,
         country,
+        socialNetworks: {
+          create: [
+            { title: "Telegram", link: "" },
+            { title: "YouTube", link: "" },
+            { title: "Instagram", link: "" },
+            { title: "X (Twitter)", link: "" },
+          ],
+        },
       },
     });
 
