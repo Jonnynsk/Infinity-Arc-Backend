@@ -103,21 +103,27 @@ export class AuthService {
 
     const refreshToken = req.cookies["refreshToken"];
 
-    if (refreshToken) {
+    if (!refreshToken) {
+      throw new UnauthorizedException("jwt must be provided");
+    }
+
+    try {
       const payload: JwtPayload =
         await this.jwtService.verifyAsync(refreshToken);
 
-      if (payload) {
-        const user = await this.prismaService.user.findUnique({
-          where: {
-            id: payload.id,
-          },
-        });
+      const user = await this.prismaService.user.findUnique({
+        where: {
+          id: payload.id,
+        },
+      });
 
-        if (user) {
-          return this.auth(res, user);
-        }
+      if (!user) {
+        throw new UnauthorizedException("Unauthorized");
       }
+
+      return this.auth(res, user);
+    } catch (error) {
+      throw new UnauthorizedException("jwt expired");
     }
   }
 
