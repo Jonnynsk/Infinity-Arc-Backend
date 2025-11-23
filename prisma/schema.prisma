@@ -16,6 +16,7 @@ model User {
   password String
   country  String
   aboutMe  String @default("") @map("about_me")
+  avatar   String @default("")
 
   socialNetworks SocialNetwork[]
   habits         Habit[]
