@@ -56,7 +56,6 @@ export class UpdateProfileRequest {
   })
   @IsOptional()
   @IsString()
-  @MinLength(2)
   @MaxLength(1000)
   aboutMe?: string;
 
