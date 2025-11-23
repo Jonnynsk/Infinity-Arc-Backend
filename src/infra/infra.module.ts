@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 
 import { PrismaModule } from "./prisma/prisma.module";
+import { CloudinaryModule } from "./cloudinary/cloudinary.module";
 
 @Module({
-  imports: [PrismaModule],
-  exports: [PrismaModule],
+  imports: [PrismaModule, CloudinaryModule],
+  exports: [PrismaModule, CloudinaryModule],
 })
 export class InfraModule {}

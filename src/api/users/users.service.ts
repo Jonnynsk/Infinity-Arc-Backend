@@ -1,12 +1,16 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "src/infra/prisma/prisma.service";
+import { CloudinaryService } from "src/infra/cloudinary/cloudinary.service";
 
 import { UpdateProfileRequest } from "./dto";
 
 @Injectable()
 export class UsersService {
-  public constructor(private readonly prismaService: PrismaService) {}
+  public constructor(
+    private readonly prismaService: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   public async getProfile(id: string) {
     const user = await this.prismaService.user.findUnique({
@@ -19,6 +23,7 @@ export class UsersService {
         username: true,
         email: true,
         country: true,
+        avatar: true,
         aboutMe: true,
         createdAt: true,
         socialNetworks: {
@@ -32,6 +37,17 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  public async uploadAvatar(id: string, file: Express.Multer.File) {
+    const result = await this.cloudinaryService.uploadImage(file);
+
+    await this.prismaService.user.update({
+      where: { id },
+      data: { avatar: result.secure_url },
+    });
+
+    return { url: result.secure_url };
   }
 
   public async updateProfile(id: string, dto: UpdateProfileRequest) {
@@ -56,6 +72,7 @@ export class UsersService {
         username: true,
         email: true,
         country: true,
+        avatar: true,
         aboutMe: true,
         createdAt: true,
         socialNetworks: {
