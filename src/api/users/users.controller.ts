@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   UploadedFile,
@@ -36,6 +37,17 @@ export class UsersController {
   @Get("profile")
   public async getProfile(@Authorized("id") id: string) {
     return await this.usersService.getProfile(id);
+  }
+
+  @ApiOperation({
+    summary: "Get user by username",
+    description: "Get user information by username",
+  })
+  @ApiOkResponse({ type: GetProfileResponse })
+  @Protected()
+  @Get(":username")
+  public async getUserByUsername(@Param("username") username: string) {
+    return await this.usersService.getUserByUsername(username);
   }
 
   @ApiOperation({

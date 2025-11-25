@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { PrismaService } from "src/infra/prisma/prisma.service";
 import { CloudinaryService } from "src/infra/cloudinary/cloudinary.service";
@@ -35,6 +35,40 @@ export class UsersService {
         },
       },
     });
+
+    return user;
+  }
+
+  public async getUserByUsername(username: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        country: true,
+        avatar: true,
+        aboutMe: true,
+        createdAt: true,
+        socialNetworks: {
+          select: {
+            id: true,
+            title: true,
+            link: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
 
     return user;
   }
