@@ -10,12 +10,12 @@ import {
 
 export class CreatePostRequest {
   @ApiProperty({
-    description: "Text of the post", 
+    description: "Text of the post",
     example: "Today I closed all the tasks on the project 💪",
   })
-  @IsString()
   @IsNotEmpty()
-  @MaxLength(2000)
+  @IsString()
+  @MaxLength(1000)
   content: string;
 
   @ApiProperty({
@@ -26,7 +26,7 @@ export class CreatePostRequest {
   })
   @IsArray()
   @IsString({ each: true })
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(6)
   @IsOptional()
   images?: string[];
 }

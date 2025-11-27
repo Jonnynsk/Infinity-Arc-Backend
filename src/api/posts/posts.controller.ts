@@ -1,5 +1,10 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { ApiBody, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+} from "@nestjs/swagger";
 
 import { PostsService } from "./posts.service";
 import { CreatePostRequest, PostResponse } from "./dto";
@@ -34,5 +39,20 @@ export class PostsController {
   @Get()
   public getPosts() {
     return this.postsService.getPosts();
+  }
+
+  @ApiOperation({ summary: "Delete post" })
+  @ApiParam({ name: "postId", type: String })
+  @ApiOkResponse({
+    description: "Post deleted",
+    schema: { properties: { id: { type: "string" } } },
+  })
+  @Protected()
+  @Delete(":postId")
+  public deletePost(
+    @Authorized("id") userId: string,
+    @Param("postId") postId: string,
+  ) {
+    return this.postsService.deletePost(userId, postId);
   }
 }
