@@ -1,4 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 
 import { PrismaService } from "src/infra/prisma/prisma.service";
 
@@ -72,5 +76,26 @@ export class PostsService {
         },
       },
     });
+  }
+
+  public async deletePost(userId: string, postId: string) {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: { id: true, userId: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Post not found");
+    }
+
+    if (post.userId !== userId) {
+      throw new ForbiddenException("You cannot delete this post");
+    }
+
+    await this.prismaService.post.delete({
+      where: { id: postId },
+    });
+
+    return { id: postId };
   }
 }
