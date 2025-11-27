@@ -20,6 +20,7 @@ model User {
 
   socialNetworks SocialNetwork[]
   habits         Habit[]
+  posts          Post[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -64,4 +65,34 @@ model HabitCompletion {
 
   @@unique([habitId, date])
   @@map("habit_completions")
+}
+
+model Post {
+  id      String @id @default(uuid())
+  content String
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  images        PostImage[]
+  likesCount    Int         @default(0) @map("likes_count")
+  commentsCount Int         @default(0) @map("comments_count")
+  repostsCount  Int         @default(0) @map("reposts_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("posts")
+}
+
+model PostImage {
+  id  String @id @default(uuid())
+  url String
+
+  postId String @map("post_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("post_images")
 }
