@@ -75,4 +75,35 @@ export class PostsController {
   ) {
     return this.postsService.toggleLike(userId, postId);
   }
+
+  @ApiOperation({ summary: "Get saved posts" })
+  @ApiOkResponse({
+    description: "List of saved posts",
+    type: PostResponse,
+    isArray: true,
+  })
+  @Protected()
+  @Get("saved")
+  public getSavedPosts(@Authorized("id") userId: string) {
+    return this.postsService.getSavedPosts(userId);
+  }
+
+  @ApiOperation({ summary: "Toggle save on post" })
+  @ApiParam({ name: "postId", type: String })
+  @ApiOkResponse({
+    description: "Save toggled",
+    schema: {
+      properties: {
+        saved: { type: "boolean" },
+      },
+    },
+  })
+  @Protected()
+  @Post(":postId/save")
+  public toggleSave(
+    @Authorized("id") userId: string,
+    @Param("postId") postId: string,
+  ) {
+    return this.postsService.toggleSave(userId, postId);
+  }
 }
