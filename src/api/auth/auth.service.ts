@@ -68,6 +68,15 @@ export class AuthService {
             { title: "X (Twitter)", link: "" },
           ],
         },
+        socialStats: {
+          create: [
+            { title: "Followers", value: 0 },
+            { title: "Following", value: 0 },
+            { title: "Posts", value: 0 },
+            { title: "Likes Received", value: 0 },
+            { title: "Comments", value: 0 },
+          ],
+        },
       },
     });
 
