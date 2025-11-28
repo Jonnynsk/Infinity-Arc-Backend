@@ -33,6 +33,13 @@ export class UsersService {
             link: true,
           },
         },
+        socialStats: {
+          select: {
+            id: true,
+            title: true,
+            value: true,
+          },
+        },
       },
     });
 
@@ -61,6 +68,13 @@ export class UsersService {
             id: true,
             title: true,
             link: true,
+          },
+        },
+        socialStats: {
+          select: {
+            id: true,
+            title: true,
+            value: true,
           },
         },
       },

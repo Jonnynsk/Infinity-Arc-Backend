@@ -19,6 +19,7 @@ model User {
   avatar   String @default("")
 
   socialNetworks SocialNetwork[]
+  socialStats    SocialStat[]
   habits         Habit[]
   posts          Post[]
 
@@ -37,6 +38,17 @@ model SocialNetwork {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("social_networks")
+}
+
+model SocialStat {
+  id    String @id @default(uuid())
+  title String
+  value Int    @default(0)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("social_stats")
 }
 
 model Habit {

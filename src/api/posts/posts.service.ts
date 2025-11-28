@@ -43,38 +43,54 @@ export class PostsService {
   public createPost(userId: string, dto: CreatePostRequest) {
     const { content, images } = dto;
 
-    return this.prismaService.post.create({
-      data: {
-        content,
-        userId,
-        ...(images?.length && {
+    return this.prismaService.$transaction(async (tx) => {
+      const post = await tx.post.create({
+        data: {
+          content,
+          userId,
+          ...(images?.length && {
+            images: {
+              create: images.map((url) => ({ url })),
+            },
+          }),
+        },
+        select: {
+          id: true,
+          content: true,
+          likesCount: true,
+          commentsCount: true,
+          repostsCount: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              name: true,
+              username: true,
+              avatar: true,
+            },
+          },
           images: {
-            create: images.map((url) => ({ url })),
-          },
-        }),
-      },
-      select: {
-        id: true,
-        content: true,
-        likesCount: true,
-        commentsCount: true,
-        repostsCount: true,
-        createdAt: true,
-        updatedAt: true,
-        user: {
-          select: {
-            name: true,
-            username: true,
-            avatar: true,
+            select: {
+              id: true,
+              url: true,
+            },
           },
         },
-        images: {
-          select: {
-            id: true,
-            url: true,
+      });
+
+      await tx.socialStat.updateMany({
+        where: {
+          userId,
+          title: "Posts",
+        },
+        data: {
+          value: {
+            increment: 1,
           },
         },
-      },
+      });
+
+      return post;
     });
   }
 
