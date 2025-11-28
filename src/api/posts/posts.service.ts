@@ -12,8 +12,8 @@ import { CreatePostRequest } from "./dto";
 export class PostsService {
   public constructor(private readonly prismaService: PrismaService) {}
 
-  public getPosts() {
-    return this.prismaService.post.findMany({
+  public async getPosts(userId: string) {
+    const posts = await this.prismaService.post.findMany({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -38,9 +38,28 @@ export class PostsService {
         },
       },
     });
+
+    const likedPostIds = await this.prismaService.postLike.findMany({
+      where: {
+        userId,
+        postId: {
+          in: posts.map((post) => post.id),
+        },
+      },
+      select: {
+        postId: true,
+      },
+    });
+
+    const likedPostIdsSet = new Set(likedPostIds.map((like) => like.postId));
+
+    return posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIdsSet.has(post.id),
+    }));
   }
 
-  public createPost(userId: string, dto: CreatePostRequest) {
+  public async createPost(userId: string, dto: CreatePostRequest) {
     const { content, images } = dto;
 
     return this.prismaService.$transaction(async (tx) => {
@@ -90,7 +109,10 @@ export class PostsService {
         },
       });
 
-      return post;
+      return {
+        ...post,
+        isLiked: false,
+      };
     });
   }
 
@@ -113,5 +135,100 @@ export class PostsService {
     });
 
     return { id: postId };
+  }
+
+  public async toggleLike(userId: string, postId: string) {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: { id: true, userId: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Post not found");
+    }
+
+    return this.prismaService.$transaction(async (tx) => {
+      const existingLike = await tx.postLike.findUnique({
+        where: {
+          userId_postId: {
+            userId,
+            postId,
+          },
+        },
+      });
+
+      if (existingLike) {
+        const updatedPost = await tx.post.update({
+          where: { id: postId },
+          data: {
+            likesCount: {
+              decrement: 1,
+            },
+          },
+          select: {
+            id: true,
+            likesCount: true,
+          },
+        });
+
+        await tx.postLike.delete({
+          where: { id: existingLike.id },
+        });
+
+        await tx.socialStat.updateMany({
+          where: {
+            userId: post.userId,
+            title: "Likes Received",
+          },
+          data: {
+            value: {
+              decrement: 1,
+            },
+          },
+        });
+
+        return {
+          liked: false,
+          likesCount: updatedPost.likesCount,
+        };
+      }
+
+      await tx.postLike.create({
+        data: {
+          userId,
+          postId,
+        },
+      });
+
+      const updatedPost = await tx.post.update({
+        where: { id: postId },
+        data: {
+          likesCount: {
+            increment: 1,
+          },
+        },
+        select: {
+          id: true,
+          likesCount: true,
+        },
+      });
+
+      await tx.socialStat.updateMany({
+        where: {
+          userId: post.userId,
+          title: "Likes Received",
+        },
+        data: {
+          value: {
+            increment: 1,
+          },
+        },
+      });
+
+      return {
+        liked: true,
+        likesCount: updatedPost.likesCount,
+      };
+    });
   }
 }
