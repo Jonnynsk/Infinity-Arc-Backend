@@ -53,6 +53,12 @@ export class PostResponse {
   })
   isLiked: boolean;
 
+  @ApiProperty({
+    description: "Whether the current user saved this post",
+    example: false,
+  })
+  isSaved: boolean;
+
   @ApiProperty({ description: "Number of comments", example: 0 })
   commentsCount: number;
 

@@ -51,11 +51,25 @@ export class PostsService {
       },
     });
 
+    const savedPostIds = await this.prismaService.savedPost.findMany({
+      where: {
+        userId,
+        postId: {
+          in: posts.map((post) => post.id),
+        },
+      },
+      select: {
+        postId: true,
+      },
+    });
+
     const likedPostIdsSet = new Set(likedPostIds.map((like) => like.postId));
+    const savedPostIdsSet = new Set(savedPostIds.map((saved) => saved.postId));
 
     return posts.map((post) => ({
       ...post,
       isLiked: likedPostIdsSet.has(post.id),
+      isSaved: savedPostIdsSet.has(post.id),
     }));
   }
 
@@ -112,6 +126,7 @@ export class PostsService {
       return {
         ...post,
         isLiked: false,
+        isSaved: false,
       };
     });
   }
@@ -228,6 +243,104 @@ export class PostsService {
       return {
         liked: true,
         likesCount: updatedPost.likesCount,
+      };
+    });
+  }
+
+  public async getSavedPosts(userId: string) {
+    const savedPosts = await this.prismaService.savedPost.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        post: {
+          select: {
+            id: true,
+            content: true,
+            likesCount: true,
+            commentsCount: true,
+            repostsCount: true,
+            createdAt: true,
+            updatedAt: true,
+            user: {
+              select: {
+                name: true,
+                username: true,
+                avatar: true,
+              },
+            },
+            images: {
+              select: {
+                id: true,
+                url: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const posts = savedPosts.map((saved) => saved.post);
+
+    const likedPostIds = await this.prismaService.postLike.findMany({
+      where: {
+        userId,
+        postId: {
+          in: posts.map((post) => post.id),
+        },
+      },
+      select: {
+        postId: true,
+      },
+    });
+
+    const likedPostIdsSet = new Set(likedPostIds.map((like) => like.postId));
+
+    return posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIdsSet.has(post.id),
+      isSaved: true,
+    }));
+  }
+
+  public async toggleSave(userId: string, postId: string) {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: { id: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Post not found");
+    }
+
+    return this.prismaService.$transaction(async (tx) => {
+      const existingSaved = await tx.savedPost.findUnique({
+        where: {
+          userId_postId: {
+            userId,
+            postId,
+          },
+        },
+      });
+
+      if (existingSaved) {
+        await tx.savedPost.delete({
+          where: { id: existingSaved.id },
+        });
+
+        return {
+          saved: false,
+        };
+      }
+
+      await tx.savedPost.create({
+        data: {
+          userId,
+          postId,
+        },
+      });
+
+      return {
+        saved: true,
       };
     });
   }
