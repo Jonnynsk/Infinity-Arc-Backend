@@ -37,8 +37,8 @@ export class PostsController {
   })
   @Protected()
   @Get()
-  public getPosts() {
-    return this.postsService.getPosts();
+  public getPosts(@Authorized("id") userId: string) {
+    return this.postsService.getPosts(userId);
   }
 
   @ApiOperation({ summary: "Delete post" })
@@ -54,5 +54,25 @@ export class PostsController {
     @Param("postId") postId: string,
   ) {
     return this.postsService.deletePost(userId, postId);
+  }
+
+  @ApiOperation({ summary: "Toggle like on post" })
+  @ApiParam({ name: "postId", type: String })
+  @ApiOkResponse({
+    description: "Like toggled",
+    schema: {
+      properties: {
+        liked: { type: "boolean" },
+        likesCount: { type: "number" },
+      },
+    },
+  })
+  @Protected()
+  @Post(":postId/like")
+  public toggleLike(
+    @Authorized("id") userId: string,
+    @Param("postId") postId: string,
+  ) {
+    return this.postsService.toggleLike(userId, postId);
   }
 }

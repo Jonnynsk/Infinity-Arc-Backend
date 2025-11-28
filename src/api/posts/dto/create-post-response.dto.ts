@@ -47,6 +47,12 @@ export class PostResponse {
   @ApiProperty({ description: "Number of likes", example: 0 })
   likesCount: number;
 
+  @ApiProperty({
+    description: "Whether the current user liked this post",
+    example: false,
+  })
+  isLiked: boolean;
+
   @ApiProperty({ description: "Number of comments", example: 0 })
   commentsCount: number;
 
