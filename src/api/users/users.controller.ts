@@ -46,8 +46,11 @@ export class UsersController {
   @ApiOkResponse({ type: GetProfileResponse })
   @Protected()
   @Get(":username")
-  public async getUserByUsername(@Param("username") username: string) {
-    return await this.usersService.getUserByUsername(username);
+  public async getUserByUsername(
+    @Param("username") username: string,
+    @Authorized("id") currentUserId: string,
+  ) {
+    return await this.usersService.getUserByUsername(username, currentUserId);
   }
 
   @ApiOperation({
