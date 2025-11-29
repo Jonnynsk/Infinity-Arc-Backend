@@ -24,6 +24,8 @@ model User {
   posts          Post[]
   postLikes      PostLike[]
   savedPosts     SavedPost[]
+  following      Follow[]        @relation("UserFollowing")
+  followers      Follow[]        @relation("UserFollowers")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -141,4 +143,19 @@ model SavedPost {
 
   @@unique([userId, postId])
   @@map("saved_posts")
+}
+
+model Follow {
+  id String @id @default(uuid())
+
+  followerId String @map("follower_id")
+  follower   User   @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String @map("following_id")
+  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([followerId, followingId])
+  @@map("follows")
 }

@@ -72,6 +72,12 @@ export class GetProfileResponse {
   country: string;
 
   @ApiProperty({
+    description: "The avatar URL of the user",
+    example: "https://example.com/avatar.jpg",
+  })
+  avatar: string;
+
+  @ApiProperty({
     description: "The bio of the user",
     example: "I am a software engineer and a full stack developer",
   })
@@ -108,4 +114,11 @@ export class GetProfileResponse {
     ],
   })
   socialStats: SocialStat[];
+
+  @ApiProperty({
+    description: "Whether the current user is following this user",
+    example: true,
+    required: false,
+  })
+  isFollowing?: boolean;
 }

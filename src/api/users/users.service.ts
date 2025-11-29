@@ -46,7 +46,7 @@ export class UsersService {
     return user;
   }
 
-  public async getUserByUsername(username: string) {
+  public async getUserByUsername(username: string, currentUserId?: string) {
     const user = await this.prismaService.user.findFirst({
       where: {
         username: {
@@ -84,7 +84,25 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    return user;
+    let isFollowing = false;
+
+    if (currentUserId && currentUserId !== user.id) {
+      const follow = await this.prismaService.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: currentUserId,
+            followingId: user.id,
+          },
+        },
+      });
+
+      isFollowing = !!follow;
+    }
+
+    return {
+      ...user,
+      isFollowing,
+    };
   }
 
   public async uploadAvatar(id: string, file: Express.Multer.File) {
