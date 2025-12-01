@@ -24,11 +24,24 @@ export class CommentResponse {
   @ApiProperty({ description: "Comment author", type: CommentAuthorResponse })
   user: CommentAuthorResponse;
 
+  @ApiProperty({ description: "Comment author", type: CommentAuthorResponse })
   @ApiProperty({
     description: "Text of the comment",
     example: "Great post! Keep it up!",
   })
   content: string;
+
+  @ApiProperty({
+    description: "Number of likes",
+    example: 0,
+  })
+  likesCount: number;
+
+  @ApiProperty({
+    description: "Whether the current user liked this comment",
+    example: false,
+  })
+  isLiked: boolean;
 
   @ApiProperty({
     description: "Date of creation",

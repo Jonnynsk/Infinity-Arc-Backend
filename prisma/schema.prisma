@@ -25,6 +25,7 @@ model User {
   postLikes      PostLike[]
   savedPosts     SavedPost[]
   comments       Comment[]
+  commentLikes   CommentLike[]
   following      Follow[]        @relation("UserFollowing")
   followers      Follow[]        @relation("UserFollowers")
 
@@ -172,8 +173,26 @@ model Comment {
   postId String @map("post_id")
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  likes      CommentLike[]
+  likesCount Int           @default(0) @map("likes_count")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("comments")
+}
+
+model CommentLike {
+  id String @id @default(uuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  commentId String  @map("comment_id")
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
 }

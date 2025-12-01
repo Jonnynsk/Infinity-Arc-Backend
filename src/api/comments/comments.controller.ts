@@ -52,8 +52,11 @@ export class CommentsController {
   })
   @Protected()
   @Get()
-  public getComments(@Param("postId") postId: string) {
-    return this.commentsService.getComments(postId);
+  public getComments(
+    @Authorized("id") userId: string,
+    @Param("postId") postId: string,
+  ) {
+    return this.commentsService.getComments(userId, postId);
   }
 
   @ApiOperation({ summary: "Update comment" })
@@ -90,5 +93,27 @@ export class CommentsController {
     @Param("commentId") commentId: string,
   ) {
     return this.commentsService.deleteComment(userId, commentId);
+  }
+
+  @ApiOperation({ summary: "Toggle like on comment" })
+  @ApiParam({ name: "postId", type: String })
+  @ApiParam({ name: "commentId", type: String })
+  @ApiOkResponse({
+    description: "Like toggled",
+    schema: {
+      properties: {
+        liked: { type: "boolean" },
+        likesCount: { type: "number" },
+      },
+    },
+  })
+  @Protected()
+  @Post(":commentId/like")
+  public toggleLike(
+    @Authorized("id") userId: string,
+    @Param("postId") postId: string,
+    @Param("commentId") commentId: string,
+  ) {
+    return this.commentsService.toggleLike(userId, commentId);
   }
 }
