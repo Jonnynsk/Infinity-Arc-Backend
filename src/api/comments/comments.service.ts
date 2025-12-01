@@ -59,6 +59,18 @@ export class CommentsService {
         },
       });
 
+      await anyTx.socialStat.updateMany({
+        where: {
+          userId,
+          title: "Comments",
+        },
+        data: {
+          value: {
+            increment: 1,
+          },
+        },
+      });
+
       return {
         ...comment,
         likesCount: 0,
@@ -180,15 +192,6 @@ export class CommentsService {
     return this.prismaService.$transaction(async (tx) => {
       await tx.comment.delete({
         where: { id: commentId },
-      });
-
-      await tx.post.update({
-        where: { id: comment.postId },
-        data: {
-          commentsCount: {
-            decrement: 1,
-          },
-        },
       });
 
       return { id: commentId };
