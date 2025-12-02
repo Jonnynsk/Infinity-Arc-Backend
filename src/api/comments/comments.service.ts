@@ -190,8 +190,19 @@ export class CommentsService {
     }
 
     return this.prismaService.$transaction(async (tx) => {
-      await tx.comment.delete({
+      const anyTx = tx as any;
+
+      await anyTx.comment.delete({
         where: { id: commentId },
+      });
+
+      await tx.post.update({
+        where: { id: comment.postId },
+        data: {
+          commentsCount: {
+            decrement: 1,
+          },
+        },
       });
 
       return { id: commentId };
