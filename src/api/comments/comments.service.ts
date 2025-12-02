@@ -6,7 +6,7 @@ import {
 
 import { PrismaService } from "src/infra/prisma/prisma.service";
 
-import { CreateCommentRequest, UpdateCommentRequest } from "./dto";
+import { CreateCommentRequest } from "./dto";
 
 @Injectable()
 export class CommentsService {
@@ -134,45 +134,6 @@ export class CommentsService {
       likesCount: 0,
       isLiked: likedCommentIdsSet.has(comment.id),
     }));
-  }
-
-  public async updateComment(
-    userId: string,
-    commentId: string,
-    dto: UpdateCommentRequest,
-  ) {
-    const comment = await this.prismaService.comment.findUnique({
-      where: { id: commentId },
-      select: { id: true, userId: true },
-    });
-
-    if (!comment) {
-      throw new NotFoundException("Comment not found");
-    }
-
-    if (comment.userId !== userId) {
-      throw new ForbiddenException("You cannot update this comment");
-    }
-
-    return this.prismaService.comment.update({
-      where: { id: commentId },
-      data: {
-        content: dto.content,
-      },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        user: {
-          select: {
-            name: true,
-            username: true,
-            avatar: true,
-          },
-        },
-      },
-    });
   }
 
   public async deleteComment(userId: string, commentId: string) {
