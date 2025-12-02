@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import {
   ApiBody,
   ApiOkResponse,
@@ -15,11 +7,7 @@ import {
 } from "@nestjs/swagger";
 
 import { CommentsService } from "./comments.service";
-import {
-  CreateCommentRequest,
-  UpdateCommentRequest,
-  CommentResponse,
-} from "./dto";
+import { CreateCommentRequest, CommentResponse } from "./dto";
 import { Authorized, Protected } from "src/common/decorators";
 
 @Controller("posts/:postId/comments")
@@ -57,25 +45,6 @@ export class CommentsController {
     @Param("postId") postId: string,
   ) {
     return this.commentsService.getComments(userId, postId);
-  }
-
-  @ApiOperation({ summary: "Update comment" })
-  @ApiParam({ name: "postId", type: String })
-  @ApiParam({ name: "commentId", type: String })
-  @ApiBody({ type: UpdateCommentRequest })
-  @ApiOkResponse({
-    description: "Comment updated successfully",
-    type: CommentResponse,
-  })
-  @Protected()
-  @Patch(":commentId")
-  public updateComment(
-    @Authorized("id") userId: string,
-    @Param("postId") postId: string,
-    @Param("commentId") commentId: string,
-    @Body() dto: UpdateCommentRequest,
-  ) {
-    return this.commentsService.updateComment(userId, commentId, dto);
   }
 
   @ApiOperation({ summary: "Delete comment" })
