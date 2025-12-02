@@ -40,6 +40,7 @@ export class CommentsService {
           content: true,
           createdAt: true,
           updatedAt: true,
+          likesCount: true,
           user: {
             select: {
               name: true,
@@ -73,7 +74,6 @@ export class CommentsService {
 
       return {
         ...comment,
-        likesCount: 0,
         isLiked: false,
       };
     });
@@ -99,6 +99,7 @@ export class CommentsService {
         content: true,
         createdAt: true,
         updatedAt: true,
+        likesCount: true,
         user: {
           select: {
             name: true,
@@ -131,7 +132,6 @@ export class CommentsService {
 
     return comments.map((comment) => ({
       ...comment,
-      likesCount: 0,
       isLiked: likedCommentIdsSet.has(comment.id),
     }));
   }
