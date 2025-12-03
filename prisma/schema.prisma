@@ -10,13 +10,15 @@ datasource db {
 model User {
   id String @id @default(uuid())
 
-  name     String
-  username String @unique
-  email    String @unique
-  password String
-  country  String
-  aboutMe  String @default("") @map("about_me")
-  avatar   String @default("")
+  name             String
+  username         String    @unique
+  email            String    @unique
+  password         String
+  country          String
+  aboutMe          String    @default("") @map("about_me")
+  avatar           String    @default("")
+  dayStreak        Int       @default(0) @map("day_streak")
+  lastCompletedDay DateTime? @map("last_completed_day")
 
   socialNetworks SocialNetwork[]
   socialStats    SocialStat[]
@@ -28,6 +30,7 @@ model User {
   commentLikes   CommentLike[]
   following      Follow[]        @relation("UserFollowing")
   followers      Follow[]        @relation("UserFollowers")
+  dayCompletions DayCompletion[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -83,6 +86,19 @@ model HabitCompletion {
 
   @@unique([habitId, date])
   @@map("habit_completions")
+}
+
+model DayCompletion {
+  id   String   @id @default(uuid())
+  date DateTime @db.Date
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, date])
+  @@map("day_completions")
 }
 
 model Post {

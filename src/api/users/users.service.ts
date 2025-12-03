@@ -26,6 +26,8 @@ export class UsersService {
         avatar: true,
         aboutMe: true,
         createdAt: true,
+        dayStreak: true,
+        lastCompletedDay: true,
         socialNetworks: {
           select: {
             id: true,
@@ -43,7 +45,39 @@ export class UsersService {
       },
     });
 
-    return user;
+    if (!user) {
+      return null;
+    }
+
+    const now = new Date();
+    const todayYear = now.getUTCFullYear();
+    const todayMonth = now.getUTCMonth();
+    const todayDay = now.getUTCDate();
+    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
+
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    let currentStreak = user.dayStreak ?? 0;
+
+    if (user.lastCompletedDay) {
+      const lastCompleted = new Date(user.lastCompletedDay);
+      const lastYear = lastCompleted.getUTCFullYear();
+      const lastMonth = lastCompleted.getUTCMonth();
+      const lastDay = lastCompleted.getUTCDate();
+      const normalizedLastCompleted = new Date(
+        Date.UTC(lastYear, lastMonth, lastDay),
+      );
+
+      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
+        currentStreak = 0;
+      }
+    }
+
+    return {
+      ...user,
+      dayStreak: currentStreak,
+    };
   }
 
   public async getUserByUsername(username: string, currentUserId?: string) {
@@ -63,6 +97,8 @@ export class UsersService {
         avatar: true,
         aboutMe: true,
         createdAt: true,
+        dayStreak: true,
+        lastCompletedDay: true,
         socialNetworks: {
           select: {
             id: true,
@@ -84,6 +120,31 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
+    const now = new Date();
+    const todayYear = now.getUTCFullYear();
+    const todayMonth = now.getUTCMonth();
+    const todayDay = now.getUTCDate();
+    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
+
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    let currentStreak = user.dayStreak ?? 0;
+
+    if (user.lastCompletedDay) {
+      const lastCompleted = new Date(user.lastCompletedDay);
+      const lastYear = lastCompleted.getUTCFullYear();
+      const lastMonth = lastCompleted.getUTCMonth();
+      const lastDay = lastCompleted.getUTCDate();
+      const normalizedLastCompleted = new Date(
+        Date.UTC(lastYear, lastMonth, lastDay),
+      );
+
+      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
+        currentStreak = 0;
+      }
+    }
+
     let isFollowing = false;
 
     if (currentUserId && currentUserId !== user.id) {
@@ -101,6 +162,7 @@ export class UsersService {
 
     return {
       ...user,
+      dayStreak: currentStreak,
       isFollowing,
     };
   }
@@ -141,6 +203,8 @@ export class UsersService {
         avatar: true,
         aboutMe: true,
         createdAt: true,
+        dayStreak: true,
+        lastCompletedDay: true,
         socialNetworks: {
           select: {
             id: true,
@@ -151,6 +215,34 @@ export class UsersService {
       },
     });
 
-    return user;
+    const now = new Date();
+    const todayYear = now.getUTCFullYear();
+    const todayMonth = now.getUTCMonth();
+    const todayDay = now.getUTCDate();
+    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
+
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    let currentStreak = user.dayStreak ?? 0;
+
+    if (user.lastCompletedDay) {
+      const lastCompleted = new Date(user.lastCompletedDay);
+      const lastYear = lastCompleted.getUTCFullYear();
+      const lastMonth = lastCompleted.getUTCMonth();
+      const lastDay = lastCompleted.getUTCDate();
+      const normalizedLastCompleted = new Date(
+        Date.UTC(lastYear, lastMonth, lastDay),
+      );
+
+      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
+        currentStreak = 0;
+      }
+    }
+
+    return {
+      ...user,
+      dayStreak: currentStreak,
+    };
   }
 }
