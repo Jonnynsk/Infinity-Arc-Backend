@@ -90,6 +90,19 @@ export class GetProfileResponse {
   createdAt: string;
 
   @ApiProperty({
+    description: "The current day streak of the user",
+    example: 5,
+  })
+  dayStreak: number;
+
+  @ApiProperty({
+    description: "The last completed day date",
+    example: "2025-01-15T00:00:00.000Z",
+    required: false,
+  })
+  lastCompletedDay?: Date | null;
+
+  @ApiProperty({
     description: "The social networks of the user",
     type: [SocialNetwork],
     example: [

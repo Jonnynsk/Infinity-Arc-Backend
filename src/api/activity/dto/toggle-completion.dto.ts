@@ -18,3 +18,8 @@ export class ToggleCompletionDto {
   @IsNotEmpty()
   date: string;
 }
+
+export class ToggleCompletionResponse {
+  @ApiProperty({ example: true })
+  completed: boolean;
+}
