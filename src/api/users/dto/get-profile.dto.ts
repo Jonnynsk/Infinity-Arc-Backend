@@ -72,6 +72,12 @@ export class GetProfileResponse {
   country: string;
 
   @ApiProperty({
+    description: "The location of the user",
+    example: "San Francisco, CA",
+  })
+  location: string;
+
+  @ApiProperty({
     description: "The avatar URL of the user",
     example: "https://example.com/avatar.jpg",
   })
