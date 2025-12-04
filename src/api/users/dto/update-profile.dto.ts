@@ -60,6 +60,16 @@ export class UpdateProfileRequest {
   aboutMe?: string;
 
   @ApiProperty({
+    description: "The location of the user",
+    example: "San Francisco, CA",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  location?: string;
+
+  @ApiProperty({
     description: "The social networks of the user",
     type: [SocialNetworkInput],
     example: [
