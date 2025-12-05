@@ -48,7 +48,11 @@ export class UsersController {
   @Protected()
   @Get("top")
   public async getTopUsersByStreak(@Query("limit") limit?: string) {
-    const limitNum = limit ? parseInt(limit, 10) : 5;
+    const parsed = limit ? parseInt(limit, 10) : 5;
+    const limitNum =
+      !Number.isNaN(parsed) && parsed > 0 && Number.isFinite(parsed)
+        ? parsed
+        : 5;
     return await this.usersService.getTopUsersByStreak(limitNum);
   }
 
