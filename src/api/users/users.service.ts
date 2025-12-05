@@ -12,6 +12,38 @@ export class UsersService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  private calculateCurrentStreak(
+    dayStreak: number | null,
+    lastCompletedDay: Date | null,
+  ): number {
+    const now = new Date();
+    const todayYear = now.getUTCFullYear();
+    const todayMonth = now.getUTCMonth();
+    const todayDay = now.getUTCDate();
+    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
+
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    let currentStreak = dayStreak ?? 0;
+
+    if (lastCompletedDay) {
+      const lastCompleted = new Date(lastCompletedDay);
+      const lastYear = lastCompleted.getUTCFullYear();
+      const lastMonth = lastCompleted.getUTCMonth();
+      const lastDay = lastCompleted.getUTCDate();
+      const normalizedLastCompleted = new Date(
+        Date.UTC(lastYear, lastMonth, lastDay),
+      );
+
+      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
+        currentStreak = 0;
+      }
+    }
+
+    return currentStreak;
+  }
+
   public async getProfile(id: string) {
     const user = await this.prismaService.user.findUnique({
       where: {
@@ -50,30 +82,10 @@ export class UsersService {
       return null;
     }
 
-    const now = new Date();
-    const todayYear = now.getUTCFullYear();
-    const todayMonth = now.getUTCMonth();
-    const todayDay = now.getUTCDate();
-    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
-
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-
-    let currentStreak = user.dayStreak ?? 0;
-
-    if (user.lastCompletedDay) {
-      const lastCompleted = new Date(user.lastCompletedDay);
-      const lastYear = lastCompleted.getUTCFullYear();
-      const lastMonth = lastCompleted.getUTCMonth();
-      const lastDay = lastCompleted.getUTCDate();
-      const normalizedLastCompleted = new Date(
-        Date.UTC(lastYear, lastMonth, lastDay),
-      );
-
-      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
-        currentStreak = 0;
-      }
-    }
+    const currentStreak = this.calculateCurrentStreak(
+      user.dayStreak,
+      user.lastCompletedDay,
+    );
 
     return {
       ...user,
@@ -122,30 +134,10 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    const now = new Date();
-    const todayYear = now.getUTCFullYear();
-    const todayMonth = now.getUTCMonth();
-    const todayDay = now.getUTCDate();
-    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
-
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-
-    let currentStreak = user.dayStreak ?? 0;
-
-    if (user.lastCompletedDay) {
-      const lastCompleted = new Date(user.lastCompletedDay);
-      const lastYear = lastCompleted.getUTCFullYear();
-      const lastMonth = lastCompleted.getUTCMonth();
-      const lastDay = lastCompleted.getUTCDate();
-      const normalizedLastCompleted = new Date(
-        Date.UTC(lastYear, lastMonth, lastDay),
-      );
-
-      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
-        currentStreak = 0;
-      }
-    }
+    const currentStreak = this.calculateCurrentStreak(
+      user.dayStreak,
+      user.lastCompletedDay,
+    );
 
     let isFollowing = false;
 
@@ -218,34 +210,69 @@ export class UsersService {
       },
     });
 
-    const now = new Date();
-    const todayYear = now.getUTCFullYear();
-    const todayMonth = now.getUTCMonth();
-    const todayDay = now.getUTCDate();
-    const today = new Date(Date.UTC(todayYear, todayMonth, todayDay));
-
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-
-    let currentStreak = user.dayStreak ?? 0;
-
-    if (user.lastCompletedDay) {
-      const lastCompleted = new Date(user.lastCompletedDay);
-      const lastYear = lastCompleted.getUTCFullYear();
-      const lastMonth = lastCompleted.getUTCMonth();
-      const lastDay = lastCompleted.getUTCDate();
-      const normalizedLastCompleted = new Date(
-        Date.UTC(lastYear, lastMonth, lastDay),
-      );
-
-      if (normalizedLastCompleted.getTime() < yesterday.getTime()) {
-        currentStreak = 0;
-      }
-    }
+    const currentStreak = this.calculateCurrentStreak(
+      user.dayStreak,
+      user.lastCompletedDay,
+    );
 
     return {
       ...user,
       dayStreak: currentStreak,
     };
+  }
+
+  public async getTopUsersByStreak(limit: number = 5) {
+    const users = await this.prismaService.user.findMany({
+      where: {
+        dayStreak: {
+          gt: 0,
+        },
+      },
+      orderBy: {
+        dayStreak: "desc",
+      },
+      take: limit * 3,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        country: true,
+        location: true,
+        avatar: true,
+        aboutMe: true,
+        createdAt: true,
+        dayStreak: true,
+        lastCompletedDay: true,
+        socialNetworks: {
+          select: {
+            id: true,
+            title: true,
+            link: true,
+          },
+        },
+        socialStats: {
+          select: {
+            id: true,
+            title: true,
+            value: true,
+          },
+        },
+      },
+    });
+
+    const usersWithRecalculatedStreak = users
+      .map((user) => ({
+        ...user,
+        dayStreak: this.calculateCurrentStreak(
+          user.dayStreak,
+          user.lastCompletedDay,
+        ),
+      }))
+      .filter((user) => user.dayStreak > 0)
+      .sort((a, b) => b.dayStreak - a.dayStreak)
+      .slice(0, limit);
+
+    return usersWithRecalculatedStreak;
   }
 }
