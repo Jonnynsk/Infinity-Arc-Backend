@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
@@ -37,6 +38,18 @@ export class UsersController {
   @Get("profile")
   public async getProfile(@Authorized("id") id: string) {
     return await this.usersService.getProfile(id);
+  }
+
+  @ApiOperation({
+    summary: "Get top users by day streak",
+    description: "Get top 5 users with the highest day streak",
+  })
+  @ApiOkResponse({ type: [GetProfileResponse] })
+  @Protected()
+  @Get("top")
+  public async getTopUsersByStreak(@Query("limit") limit?: string) {
+    const limitNum = limit ? parseInt(limit, 10) : 5;
+    return await this.usersService.getTopUsersByStreak(limitNum);
   }
 
   @ApiOperation({
